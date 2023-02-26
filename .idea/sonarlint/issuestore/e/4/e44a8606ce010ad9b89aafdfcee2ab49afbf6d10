@@ -1,0 +1,12 @@
+
+0
+java:S1220""Move this file to a named package.
+\
+java:S1075"ARefactor your code to get this URI from a customizable parameter.(ìí×ûÿÿÿÿ
+‚
+java:S1130	"lRemove the declaration of thrown exception 'java.io.IOException', as it cannot be thrown from method's body.(œû¿Ø
+Q	java:S125"<This block of commented-out lines of code should be removed.(¨ÇîÓ
+S	java:S106"9Replace this use of System.out or System.err by a logger.(Ë¹¿Âıÿÿÿÿ
+N	java:S106 "9Replace this use of System.out or System.err by a logger.(¯¹±é
+S	java:S106!"9Replace this use of System.out or System.err by a logger.( ¾„šşÿÿÿÿ
+Z	java:S106("9Replace this use of System.out or System.err by a logger.(æÁ÷œùÿÿÿÿ8íÉŒ÷¥0

@@ -1,0 +1,60 @@
+
+m	java:S127$"XRefactor the code in order to not assign to this loop counter from within the loop body.(Ì‚ˆÌ
+m	java:S1275"XRefactor the code in order to not assign to this loop counter from within the loop body.(Ì‚ˆÌ
+0
+java:S1220""Move this file to a named package.
+4
+java:S1128
+"Remove this duplicated import.(Ñƒöğ
+d
+java:S1128"IRemove this unused import 'org.apache.poi.ss.usermodel.CellType.NUMERIC'.(¬‡¥ùÿÿÿÿ
+c
+java:S1128"HRemove this unused import 'org.apache.poi.ss.usermodel.CellType.STRING'.(ÔšÛ›üÿÿÿÿ
+Y
+java:S1128"CRemove this unused import 'org.apache.poi.hssf.usermodel.HSSFCell'.(™Óšà
+J
+java:S1128"5Remove this unused import 'java.io.FileOutputStream'.(˜«ªg
+J
+java:S1128"4Remove this unused import 'java.io.FileInputStream'.(˜³ÉÓ
+X
+java:S1128"BRemove this unused import 'org.apache.poi.hssf.usermodel.HSSFRow'.(‹õ·¿
+?
+java:S1128")Remove this unused import 'java.io.File'.(†Ğ¥Å
+X
+java:S1128"BRemove this unused import 'org.apache.poi.xssf.usermodel.XSSFRow'.(àœúÜ
+b
+java:S1128	"GRemove this unused import 'org.apache.poi.xssf.usermodel.XSSFWorkbook'.(Œ¦ƒëşÿÿÿÿ
+Z
+java:S1128"DRemove this unused import 'org.apache.poi.hssf.usermodel.HSSFSheet'.(®…óŸ
+X
+java:S1128"=Remove this unused import 'org.apache.poi.ss.usermodel.Cell'.(éÊˆüÿÿÿÿ
+_
+java:S1128"DRemove this unused import 'org.apache.poi.xssf.usermodel.XSSFSheet'.(¡ÏŸ®úÿÿÿÿ
+Y
+java:S1128"CRemove this unused import 'org.apache.poi.xssf.usermodel.XSSFCell'.(Ñƒöğ
+b
+java:S1128"GRemove this unused import 'org.apache.poi.hssf.usermodel.HSSFWorkbook'.(¾§—Œıÿÿÿÿ
+g
+java:S3776"RRefactor this method to reduce its Cognitive Complexity from 20 to the 15 allowed.(çÊîx
+
+java:S1130"lRemove the declaration of thrown exception 'java.io.IOException', as it cannot be thrown from method's body.(çÊîx
+8
+java:S1659""Declare "end1" on a separate line.(£Ì
+:
+java:S1659"$Declare "start2" on a separate line.(£Ì
+8
+java:S1659""Declare "end2" on a separate line.(£Ì
+V	java:S125"<This block of commented-out lines of code should be removed.( ³®Äÿÿÿÿÿ
+V	java:S125"<This block of commented-out lines of code should be removed.( ³®Äÿÿÿÿÿ
+V	java:S125"<This block of commented-out lines of code should be removed.( ³®Äÿÿÿÿÿ
+V	java:S125"<This block of commented-out lines of code should be removed.( ³®Äÿÿÿÿÿ
+Q	java:S125""<This block of commented-out lines of code should be removed.(ŞõÀ€
+V	java:S125*"<This block of commented-out lines of code should be removed.(ÖÂ Âüÿÿÿÿ
+Q	java:S1253"<This block of commented-out lines of code should be removed.(š¾œÛ
+Q	java:S125;"<This block of commented-out lines of code should be removed.(¸Ïø
+N	java:S106A"9Replace this use of System.out or System.err by a logger.(ë£ôÕ
+S	java:S106B"9Replace this use of System.out or System.err by a logger.(’£äëøÿÿÿÿ
+V	java:S125C"<This block of commented-out lines of code should be removed.(¼Â¢†ùÿÿÿÿ
+V	java:S125F"<This block of commented-out lines of code should be removed.(éØ»Úûÿÿÿÿ
+L
+java:S2696K"6Make the enclosing method "static" or remove this set.(Ç¡Ûß
