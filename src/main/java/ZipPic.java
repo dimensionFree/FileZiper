@@ -65,7 +65,7 @@ public class ZipPic{
         File file;
         float scale=1.0f;
 
-        float quality=0.5f;
+        float quality=0.75f;
         private static volatile int i = 1;
 
         public zipFileClass() {
@@ -77,6 +77,7 @@ public class ZipPic{
             int width = bimg.getWidth();
             int height = bimg.getHeight();
             scale = Math.min(SCREEN_WIDTH / width,SCREEN_HEIGHT/height);
+            scale=Math.max(scale,0.75f);
             bimg.flush();
 
         }
