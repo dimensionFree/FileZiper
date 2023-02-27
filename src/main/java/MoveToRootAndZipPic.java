@@ -24,6 +24,7 @@ public class MoveToRootAndZipPic {
 
         moveToRootAndZipPic(isMoveToRoot, isZipPic);
 
+        //size gotten is a little inaccurate,according to the sleeping time
         Thread.sleep(1000);
         var sizeAfter = FileUtils.sizeOfDirectory(ROOT);
         //todo: change all sout to log.info--
