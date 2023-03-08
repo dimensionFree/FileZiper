@@ -39,9 +39,9 @@ public class MoveToRoot {
             System.out.println("source: "+directionOrFile);
             System.out.println("des: "+pathname);
 //            //move file
-//            if (!parentName.equals(root)){
-//                System.out.println(directionOrFile.renameTo(new File(pathname)));
-//            }
+            if (!parentName.equals(ROOT.getName())){
+                System.out.println(directionOrFile.renameTo(new File(pathname)));
+            }
 
         }else {
             File[] secondFolders = directionOrFile.listFiles();

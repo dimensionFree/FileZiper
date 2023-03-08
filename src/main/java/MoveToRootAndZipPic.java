@@ -41,6 +41,7 @@ public class MoveToRootAndZipPic {
             MoveToRoot.moveOrNext(ROOT);
         }
         if (isZipPic) {
+
             ZipPic.ROOT= ROOT;
             ZipPic.zipPic(ROOT);
         }
