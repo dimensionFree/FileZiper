@@ -17,8 +17,11 @@ public class MoveToRootAndZipPic {
         //todo: add sub folder to zippic task
         ROOT =new File(directionStr);
 
-        boolean isMoveToRoot = true;
+        boolean isMoveToRoot = false;
         boolean isZipPic = true;
+        boolean isZipSubDir=true;
+
+        ZipPic.IS_ZIP_SUB_DIR=isZipSubDir;
         //TODO :add FileSize Comparison before and after
         var sizeBefore =  FileUtils.sizeOfDirectory(ROOT);
 
@@ -35,15 +38,15 @@ public class MoveToRootAndZipPic {
 
     }
 
-    private static void moveToRootAndZipPic(boolean isMoveToRoot, boolean isZipPic) throws IOException {
+    private static void moveToRootAndZipPic(boolean isMoveToRoot, boolean isZipPic) throws Exception {
         if (isMoveToRoot){
             MoveToRoot.ROOT = ROOT;
-            MoveToRoot.moveOrNext(ROOT);
+            MoveToRoot.moveOrNext();
         }
         if (isZipPic) {
 
             ZipPic.ROOT= ROOT;
-            ZipPic.zipPic(ROOT);
+            ZipPic.zipPic();
         }
 
     }

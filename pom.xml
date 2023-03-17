@@ -57,6 +57,12 @@
             <version>4.13.1</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>io.github.techgnious</groupId>
+            <artifactId>IVCompressor</artifactId>
+            <version>1.0.1</version>
+        </dependency>
     </dependencies>
 
 </project>

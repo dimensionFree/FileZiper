@@ -6,16 +6,16 @@ public class MoveToRoot {
 
     static Set<String> parentSet= new HashSet<String>();
     static File ROOT;
-    public static void main(String[] args) throws Exception {
+    public static void moveOrNext() {
 	    // write your code here
         System.out.println(ROOT);
-        moveOrNext(ROOT);
+        moveOrNextInDir(ROOT);
     }
 
 
 
 
-    public static void moveOrNext(File directionOrFile){
+    public static void moveOrNextInDir(File directionOrFile){
         if (directionOrFile.isFile()){
 
             File parentFile = directionOrFile.getParentFile();
@@ -46,7 +46,7 @@ public class MoveToRoot {
         }else {
             File[] secondFolders = directionOrFile.listFiles();
             for (File sndFolder : secondFolders) {
-                moveOrNext(sndFolder);
+                moveOrNextInDir(sndFolder);
             }
             System.out.println("no!!!");
         }

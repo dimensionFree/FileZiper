@@ -1,5 +1,4 @@
 import net.coobird.thumbnailator.Thumbnails;
-import org.apache.commons.compress.utils.Lists;
 import utils.ThreadPoolImpl;
 
 import javax.imageio.ImageIO;
@@ -11,29 +10,26 @@ import java.util.*;
 public class ZipPic {
 
     public static final int ZIP_PIC_MIN_SIZE = 2097152;
+    public static final ThreadPoolImpl THREAD_POOL = new ThreadPoolImpl(7);
+    public static boolean IS_ZIP_SUB_DIR = false;
     static Set<String> parentSet = new HashSet<String>();
     static File ROOT;
     static float SCREEN_WIDTH = 1920;
     static float SCREEN_HEIGHT = 1080;
     public static String ZIP_PATH = ROOT + File.separator + "zip";
 
-    public static void main(String[] args) throws IOException {
+    public static void zipPic(){
         // write your code here
-        zipPic(ROOT);
+        try {
+            zipPicInDir(ROOT);
+        } finally {
+            THREAD_POOL.destroy();
+            System.out.println("t is gonna destroy");
+        }
     }
 
 
-    public static void zipPic(File direction) throws IOException {
-        ZIP_PATH = ROOT + File.separator + "zip";
-        ThreadPoolImpl t = new ThreadPoolImpl(7);
-        //“D:\zip”目录现在不存在,make dir "zip" direction
-//        String dirStr = ROOT+File.separator+"zip";
-//        File directory = new File(dirStr);
-//
-//        //mkdir
-//        boolean hasSucceeded = directory.mkdir();
-//        System.out.println("创建文件夹结果（不含父文件夹）：" + hasSucceeded);
-
+    public static void zipPicInDir(File direction)  {
 
         File[] files = direction.listFiles();
 
@@ -42,21 +38,22 @@ public class ZipPic {
             for (final File file : files) {
                 String fileName = file.getName();
                 String lowerCase = fileName.toLowerCase();
-                if (lowerCase.endsWith(".png") || lowerCase.endsWith(".jpg") || lowerCase.endsWith(".jpeg") || lowerCase.endsWith(".gif") || lowerCase.endsWith(".bmp")) {
-                    //2m
-                    if (file.length() > ZIP_PIC_MIN_SIZE) {
-                        t.execute(new zipFileClass(file));
+                if (file.isFile()&&file.canWrite()) {
+                    if (lowerCase.endsWith(".png") || lowerCase.endsWith(".jpg") || lowerCase.endsWith(".jpeg") || lowerCase.endsWith(".gif") || lowerCase.endsWith(".bmp")) {
+                        //2m
+                        if (file.length() > ZIP_PIC_MIN_SIZE) {
+                            THREAD_POOL.execute(new zipFileClass(file));
+                        }
                     }
+                } else if (IS_ZIP_SUB_DIR && file.isDirectory()) {
+                    zipPicInDir(file);
                 }
+
             }
-            System.out.println("t is:" + t);
+            System.out.println("t is:" + THREAD_POOL);
         } catch (Exception e) {
             throw new RuntimeException(e);
-        } finally {
-            t.destroy();
-            System.out.println("t is gonna destroy");
         }
-
 
     }
 
@@ -84,7 +81,8 @@ public class ZipPic {
 
         @Override
         public void run() {
-            String source = ROOT + File.separator + file.getName();
+//            String source = ROOT + File.separator + file.getName();
+            String source = file.getPath();
             //save it to extra "zip" folder
 //            String des = ZIP_PATH + File.separator + file.getName();
             String des = source;
@@ -96,7 +94,6 @@ public class ZipPic {
             try {
 
                 zipFile(source, des, scale, quality);
-
                 System.out.println("当前处理的线程:" + Thread.currentThread().getName() + " 执行任务" + (i++) + " 完成");
             } catch (IOException e) {
                 System.out.println("当前处理的线程:" + Thread.currentThread().getName() + " 执行任务" + (i++) + " 失败");
