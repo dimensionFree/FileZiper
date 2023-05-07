@@ -20,21 +20,27 @@ public class MoveToRootAndZipPic {
         boolean isMoveToRoot = false;
         boolean isZipPic = true;
         boolean isZipSubDir=true;
+        int floorMax=2;
 
         ZipPic.IS_ZIP_SUB_DIR=isZipSubDir;
+        MoveToRoot.FLOOR_MAX=floorMax;
         //TODO :add FileSize Comparison before and after
         var sizeBefore =  FileUtils.sizeOfDirectory(ROOT);
 
-        moveToRootAndZipPic(isMoveToRoot, isZipPic);
 
-        //size gotten is a little inaccurate,according to the sleeping time
-        Thread.sleep(1000);
-        var sizeAfter = FileUtils.sizeOfDirectory(ROOT);
-        //todo: change all sout to log.info--
-        System.out.println(
-                "sizeBefore:"+ ByteConvertUtils.bytesToMbStr(sizeBefore) +
-                        "\nsizeAfter:"+ ByteConvertUtils.bytesToMbStr(sizeAfter)+
-                        "\nreduced:"+ByteConvertUtils.bytesToMbStr(sizeBefore-sizeAfter));
+        try {
+            moveToRootAndZipPic(isMoveToRoot, isZipPic);
+        } finally {
+            //size gotten is a little inaccurate,according to the sleeping time
+            Thread.sleep(1000);
+            var sizeAfter = FileUtils.sizeOfDirectory(ROOT);
+            //todo: change all sout to log.info--
+            System.out.println(
+                    "sizeBefore:"+ ByteConvertUtils.bytesToMbStr(sizeBefore) +
+                            "\nsizeAfter:"+ ByteConvertUtils.bytesToMbStr(sizeAfter)+
+                            "\nreduced:"+ByteConvertUtils.bytesToMbStr(sizeBefore-sizeAfter));
+        }
+
 
     }
 
@@ -43,10 +49,16 @@ public class MoveToRootAndZipPic {
             MoveToRoot.ROOT = ROOT;
             MoveToRoot.moveOrNext();
         }
-        if (isZipPic) {
 
-            ZipPic.ROOT= ROOT;
-            ZipPic.zipPic();
+        try {
+            if (isZipPic) {
+
+                ZipPic.ROOT= ROOT;
+                ZipPic.zipPic();
+            }
+        } finally {
+            ZipPic.THREAD_POOL.destroy();
+            System.out.println("t is gonna destroy");
         }
 
     }

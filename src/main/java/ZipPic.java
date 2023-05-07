@@ -1,4 +1,5 @@
 import net.coobird.thumbnailator.Thumbnails;
+import org.apache.commons.collections4.CollectionUtils;
 import utils.ThreadPoolImpl;
 
 import javax.imageio.ImageIO;
@@ -6,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Logger;
 
 public class ZipPic {
 
@@ -31,14 +33,20 @@ public class ZipPic {
 
     public static void zipPicInDir(File direction)  {
 
-        File[] files = direction.listFiles();
-
+        var files = direction.listFiles();
+        var readOnlyFileSet=new HashSet<String>();
         try {
 
-            for (final File file : files) {
+            for (File file : files) {
+                if (!file.canWrite()){
+                    //set writable
+                    file.setWritable(true);
+//                    readOnlyFileSet.add(file.getPath());
+//                    continue;
+                }
                 String fileName = file.getName();
                 String lowerCase = fileName.toLowerCase();
-                if (file.isFile()&&file.canWrite()) {
+                if (file.isFile()) {
                     if (lowerCase.endsWith(".png") || lowerCase.endsWith(".jpg") || lowerCase.endsWith(".jpeg") || lowerCase.endsWith(".gif") || lowerCase.endsWith(".bmp")) {
                         //2m
                         if (file.length() > ZIP_PIC_MIN_SIZE) {
@@ -51,6 +59,9 @@ public class ZipPic {
 
             }
             System.out.println("t is:" + THREAD_POOL);
+//            if (CollectionUtils.isNotEmpty(readOnlyFileSet)){
+//                System.out.println("readOnlyFile in "+direction.getPath()+" \nare\n "+readOnlyFileSet);
+//            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

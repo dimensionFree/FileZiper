@@ -6,6 +6,8 @@ public class MoveToRoot {
 
     static Set<String> parentSet= new HashSet<String>();
     static File ROOT;
+    static int FLOOR_MAX=100;
+    static int floor=0;
     public static void moveOrNext() {
 	    // write your code here
         System.out.println(ROOT);
@@ -44,11 +46,23 @@ public class MoveToRoot {
             }
 
         }else {
-            File[] secondFolders = directionOrFile.listFiles();
-            for (File sndFolder : secondFolders) {
-                moveOrNextInDir(sndFolder);
+            if (floor<FLOOR_MAX){
+                floor++;
+                File[] secondFolders = directionOrFile.listFiles();
+                for (File sndFolder : secondFolders) {
+                    moveOrNextInDir(sndFolder);
+                }
+            }else {
+                String pathname = ROOT + File.separator + directionOrFile.getName();
+                System.out.println("source: "+directionOrFile);
+                System.out.println("des: "+pathname);
+                //move dir
+                System.out.println(directionOrFile.renameTo(new File(pathname)));
+
+                System.out.println("no!!!");
+                floor=FLOOR_MAX-1;
             }
-            System.out.println("no!!!");
+
         }
     }
 
