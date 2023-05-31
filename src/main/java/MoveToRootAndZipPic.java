@@ -17,13 +17,13 @@ public class MoveToRootAndZipPic {
         //todo: add sub folder to zippic task
         ROOT =new File(directionStr);
 
-        boolean isMoveToRoot = false;
-        boolean isZipPic = true;
-        boolean isZipSubDir=true;
-        int floorMax=2;
-
+        boolean isMoveToRoot = true;
+        boolean isZipPic = false;
+        boolean isZipSubDir=false;
+//        int floorMax=2;
+//        MoveToRoot.FLOOR_MAX=floorMax;
         ZipPic.IS_ZIP_SUB_DIR=isZipSubDir;
-        MoveToRoot.FLOOR_MAX=floorMax;
+
         //TODO :add FileSize Comparison before and after
         var sizeBefore =  FileUtils.sizeOfDirectory(ROOT);
 

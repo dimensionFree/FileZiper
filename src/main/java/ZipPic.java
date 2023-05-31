@@ -41,8 +41,6 @@ public class ZipPic {
                 if (!file.canWrite()){
                     //set writable
                     file.setWritable(true);
-//                    readOnlyFileSet.add(file.getPath());
-//                    continue;
                 }
                 String fileName = file.getName();
                 String lowerCase = fileName.toLowerCase();
@@ -59,9 +57,6 @@ public class ZipPic {
 
             }
             System.out.println("t is:" + THREAD_POOL);
-//            if (CollectionUtils.isNotEmpty(readOnlyFileSet)){
-//                System.out.println("readOnlyFile in "+direction.getPath()+" \nare\n "+readOnlyFileSet);
-//            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
