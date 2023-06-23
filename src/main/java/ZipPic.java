@@ -45,7 +45,7 @@ public class ZipPic {
                 String fileName = file.getName();
                 String lowerCase = fileName.toLowerCase();
                 if (file.isFile()) {
-                    if (lowerCase.endsWith(".png") || lowerCase.endsWith(".jpg") || lowerCase.endsWith(".jpeg") || lowerCase.endsWith(".gif") || lowerCase.endsWith(".bmp")) {
+                    if (lowerCase.endsWith(".png") || lowerCase.endsWith(".jpg") || lowerCase.endsWith(".jpeg") || lowerCase.endsWith(".bmp")) {
                         //2m
                         if (file.length() > ZIP_PIC_MIN_SIZE) {
                             THREAD_POOL.execute(new zipFileClass(file));
@@ -79,8 +79,9 @@ public class ZipPic {
             BufferedImage bimg = ImageIO.read(file);
             int width = bimg.getWidth();
             int height = bimg.getHeight();
-            scale = Math.min(SCREEN_WIDTH / width, SCREEN_HEIGHT / height) * 2;
-            scale = Math.max(scale, 0.8f);
+            scale = Math.min(SCREEN_WIDTH / width, SCREEN_HEIGHT / height) ;
+            float minimumScale = 0.6f;
+            scale = Math.max(scale, minimumScale);
             bimg.flush();
 
         }
