@@ -32,17 +32,12 @@ public class MoveToRoot {
 //            //replace parent folderName duplicate
 //            newFilename = newFilename.replaceAll("[" + parentName + "]+", "");
             //todo replace duplicate String in fileNames
-            if (parentSet.contains(newFilename)){
-                newFilename=parentFile.getParentFile().getName()+"_"+newFilename;
-            }else {
-                parentSet.add(newFilename);
-            }
-            String pathname = ROOT + File.separator + newFilename;
+            String pathname = checkAndBuildFileName(parentFile, newFilename);
             System.out.println("source: "+directionOrFile);
             System.out.println("des: "+pathname);
 //            //move file
             if (!parentName.equals(ROOT.getName())){
-                System.out.println(directionOrFile.renameTo(new File(pathname)));
+                tryMoveFile(directionOrFile,pathname,parentFile,newFilename);
             }
 
         }else {
@@ -64,6 +59,34 @@ public class MoveToRoot {
             }
 
         }
+    }
+
+    private static String checkAndBuildFileName(File parentFile, String newFilename) {
+        newFilename = getNewFilename(parentFile, newFilename);
+        String pathname = ROOT + File.separator + newFilename;
+        return pathname;
+    }
+
+    private static String getNewFilename(File parentFile, String newFilename) {
+        if (parentSet.contains(newFilename)){
+            newFilename = parentFile.getParentFile().getName()+"_"+ newFilename;
+        }else {
+            parentSet.add(newFilename);
+        }
+        return newFilename;
+    }
+
+    private static void tryMoveFile(File directionOrFile, String pathname, File parentFile, String newFilename) {
+        boolean moveResult = directionOrFile.renameTo(new File(pathname));
+        System.out.println(moveResult);
+        if (!moveResult){
+            //build new name with further parent
+            newFilename = getNewFilename(parentFile, newFilename);
+            pathname = checkAndBuildFileName(parentFile, newFilename);
+            System.out.println();
+            tryMoveFile(directionOrFile, pathname, parentFile,newFilename);
+        }
+
     }
 
     private static String getParentNameIfDuplicate(File parentFile, String parentName) {

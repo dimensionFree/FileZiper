@@ -17,8 +17,8 @@ public class MoveToRootAndZipPic {
         //todo: add sub folder to zippic task
         ROOT =new File(directionStr);
 
-        boolean isMoveToRoot = true;
-        boolean isZipPic = false;
+        boolean isMoveToRoot = false;
+        boolean isZipPic = true;
         boolean isZipSubDir=false;
 //        int floorMax=2;
 //        MoveToRoot.FLOOR_MAX=floorMax;

@@ -80,7 +80,7 @@ public class ZipPic {
             int width = bimg.getWidth();
             int height = bimg.getHeight();
             scale = Math.min(SCREEN_WIDTH / width, SCREEN_HEIGHT / height) ;
-            float minimumScale = 0.6f;
+            float minimumScale = 0.5f;
             scale = Math.max(scale, minimumScale);
             bimg.flush();
 
