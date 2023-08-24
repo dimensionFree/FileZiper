@@ -19,7 +19,7 @@ public class MoveToRootAndZipPic {
 
         boolean isMoveToRoot = false;
         boolean isZipPic = true;
-        boolean isZipSubDir=false;
+        boolean isZipSubDir=true;
 //        int floorMax=2;
 //        MoveToRoot.FLOOR_MAX=floorMax;
         ZipPic.IS_ZIP_SUB_DIR=isZipSubDir;
