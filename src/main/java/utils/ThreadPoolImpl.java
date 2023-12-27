@@ -2,6 +2,7 @@ package utils;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class ThreadPoolImpl implements IThreadPool {
@@ -102,8 +103,12 @@ public class ThreadPoolImpl implements IThreadPool {
         }
         //如果任务队列已处理完成，销毁线程，清空任务
         for (int i = 0; i < WORKER_NUMBER; i++) {
-            workThreads[i].setWorkerFlag();
-            workThreads[i] = null;
+            WorkerThread workThread = workThreads[i];
+            if (Objects.nonNull( workThread)){
+                workThread.setWorkerFlag();
+                workThread = null;
+            }
+
         }
         threadPool = null;
         taskQueue.clear();
