@@ -10,7 +10,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 public class ZipPic {
-
+    //2m
     public static final int ZIP_PIC_MIN_SIZE = 2097152;
     public static final ThreadPoolImpl THREAD_POOL = new ThreadPoolImpl(7);
     public static boolean IS_ZIP_SUB_DIR = false;

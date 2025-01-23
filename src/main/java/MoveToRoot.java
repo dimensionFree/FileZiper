@@ -90,7 +90,13 @@ public class MoveToRoot {
     }
 
     private static String getParentNameIfDuplicate(File parentFile, String parentName) {
-        String superParentName = parentFile.getParentFile().getName();
+
+        String superParentName = null;
+        try {
+            superParentName = parentFile.getParentFile().getName();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         if (parentName.matches("[0-9]*")||parentName.length()==1){
             parentName = getParentNameIfDuplicate(parentFile.getParentFile(),superParentName)+parentName;
         }
