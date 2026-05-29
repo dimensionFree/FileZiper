@@ -1,3 +1,8 @@
 sourceDirection.txt
 .idea
 target
+ffmpeg/
+ffmpeg-extract/
+ffmpeg-release-essentials.zip
+ffmpegPath.txt
+agent.md
