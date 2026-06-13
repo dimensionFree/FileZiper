@@ -9,6 +9,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -16,7 +17,7 @@ public class VideoCompressor {
 
     public static final String SOURCE_DIRECTION = "./sourceDirection.txt";
     public static final String FFMPEG_PATH_FILE = "./ffmpegPath.txt";
-    public static final long VIDEO_MIN_SIZE = ByteConvertUtils.mbToBytes(500);
+    public static final long VIDEO_MIN_SIZE = ByteConvertUtils.mbToBytes(400);
     public static final long TARGET_MAX_SIZE = ByteConvertUtils.mbToBytes(300);
     public static final int MAX_WIDTH = 1920;
     public static final int CRF = 26;
@@ -32,7 +33,6 @@ public class VideoCompressor {
             Arrays.asList(".mp4")
     );
     static File ROOT;
-    static File OUTPUT_ROOT;
     static String FFMPEG_COMMAND = "ffmpeg";
     static String FFPROBE_COMMAND = "ffprobe";
 
@@ -47,18 +47,27 @@ public class VideoCompressor {
             throw new RuntimeException("invalid video root: " + root);
         }
         ROOT = root;
-        OUTPUT_ROOT = new File(ROOT, OUTPUT_DIR_NAME);
-        if (!OUTPUT_ROOT.exists() && !OUTPUT_ROOT.mkdirs()) {
-            throw new RuntimeException("failed to create video output dir: " + OUTPUT_ROOT);
-        }
         System.out.println("视频根目录: " + root.getAbsolutePath());
-        System.out.println("视频输出目录: " + OUTPUT_ROOT.getAbsolutePath());
+        System.out.println("视频输出目录: 每个源视频同目录下的 " + OUTPUT_DIR_NAME);
         checkFFmpeg();
         List<VideoTask> tasks = collectVideoTasks(root);
+        printTaskList(tasks);
         printEstimate(tasks);
-        for (VideoTask task : tasks) {
-            compressOneVideo(task.file, task.videoInfo);
+        if (tasks.isEmpty()) {
+            System.out.println("没有需要压缩的视频。");
+            return;
         }
+        if (!confirmContinue()) {
+            System.out.println("已取消视频压缩。");
+            return;
+        }
+        CompressionSummary summary = new CompressionSummary(tasks.size());
+        for (int i = 0; i < tasks.size(); i++) {
+            VideoTask task = tasks.get(i);
+            summary.add(compressOneVideo(task.file, task.videoInfo, i + 1, tasks.size()));
+        }
+        summary.print();
+        openCompressedDirs(summary.getOutputDirs());
     }
 
     private static List<VideoTask> collectVideoTasks(File root) {
@@ -88,7 +97,7 @@ public class VideoCompressor {
         }
         for (File file : files) {
             if (file.isDirectory()) {
-                if (file.equals(OUTPUT_ROOT)) {
+                if (OUTPUT_DIR_NAME.equalsIgnoreCase(file.getName())) {
                     continue;
                 }
                 if (IS_COMPRESS_SUB_DIR) {
@@ -102,9 +111,10 @@ public class VideoCompressor {
         }
     }
 
-    private static void compressOneVideo(File source, VideoInfo videoInfo) {
+    private static CompressionResult compressOneVideo(File source, VideoInfo videoInfo, int currentIndex, int totalCount) {
         var start = System.currentTimeMillis();
         long inputSize = source.length();
+        System.out.println("处理进度: " + currentIndex + "/" + totalCount);
         System.out.println("开始压缩视频: " + source.getAbsolutePath());
         System.out.println("输入大小: " + ByteConvertUtils.bytesToMbStr(inputSize));
         System.out.println("时长: " + formatSeconds(videoInfo.durationSeconds)
@@ -128,7 +138,10 @@ public class VideoCompressor {
                 if (targetSuccess && isUsefulOutput(source, targetOutput)) {
                     bestOutput = targetOutput;
                 } else {
-                    bestOutput = null;
+                    System.out.println("GPU 编码失败，回退到 CPU libx264");
+                    deleteIfExists(targetOutput);
+                    targetSuccess = runFFmpeg(buildTargetCommand(source, targetOutput, videoInfo));
+                    bestOutput = targetSuccess && isUsefulOutput(source, targetOutput) ? targetOutput : null;
                 }
             } else {
                 boolean crfSuccess = runFFmpeg(buildCrfCommand(source, crfOutput, videoInfo));
@@ -144,12 +157,12 @@ public class VideoCompressor {
 
             if (bestOutput == null) {
                 System.out.println("跳过视频压缩，没有生成更小的输出文件");
-                return;
+                return CompressionResult.skipped();
             }
             if (IS_STRICT_TARGET_SIZE && bestOutput.length() > TARGET_MAX_SIZE) {
                 System.out.println("跳过视频压缩，输出文件仍然超过目标大小: "
                         + ByteConvertUtils.bytesToMbStr(bestOutput.length()));
-                return;
+                return CompressionResult.skipped();
             }
 
             long outputSize = bestOutput.length();
@@ -157,9 +170,11 @@ public class VideoCompressor {
             System.out.println("视频压缩完成: " + finalOutput.getAbsolutePath());
             System.out.println("输出大小: " + ByteConvertUtils.bytesToMbStr(outputSize));
             System.out.println("节省空间: " + ByteConvertUtils.bytesToMbStr(inputSize - outputSize));
+            return CompressionResult.success(inputSize, outputSize, finalOutput.getParentFile());
         } catch (Exception e) {
             System.out.println("视频压缩失败: " + source.getAbsolutePath());
             e.printStackTrace();
+            return CompressionResult.skipped();
         } finally {
             deleteQuietly(crfOutput);
             deleteQuietly(targetOutput);
@@ -185,6 +200,35 @@ public class VideoCompressor {
         System.out.println("待处理视频总时长: " + formatSeconds(totalDuration));
         System.out.println("视频编码模式: " + (IS_USE_GPU ? "GPU " + GPU_ENCODER : "CPU libx264"));
         System.out.println("预计总耗时: " + formatSeconds(minSeconds) + " - " + formatSeconds(maxSeconds));
+    }
+
+    private static void printTaskList(List<VideoTask> tasks) {
+        System.out.println("待处理视频清单");
+        if (tasks.isEmpty()) {
+            System.out.println("(空)");
+            return;
+        }
+        for (int i = 0; i < tasks.size(); i++) {
+            VideoTask task = tasks.get(i);
+            double[] estimate = estimateSeconds(task.videoInfo);
+            System.out.println((i + 1) + ". " + task.file.getName());
+            System.out.println("   路径: " + task.file.getAbsolutePath());
+            System.out.println("   输出: " + buildOutputFile(task.file).getAbsolutePath());
+            System.out.println("   大小: " + ByteConvertUtils.bytesToMbStr(task.file.length())
+                    + ", 时长: " + formatSeconds(task.videoInfo.durationSeconds)
+                    + ", 分辨率: " + task.videoInfo.width + "x" + task.videoInfo.height
+                    + ", 预计耗时: " + formatSeconds(estimate[0]) + " - " + formatSeconds(estimate[1]));
+        }
+    }
+
+    private static boolean confirmContinue() {
+        System.out.println("确认开始压缩以上视频？输入 y 或 yes 继续，其他输入取消:");
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
+            String answer = reader.readLine();
+            return answer != null && ("y".equalsIgnoreCase(answer.trim()) || "yes".equalsIgnoreCase(answer.trim()));
+        } catch (IOException e) {
+            throw new RuntimeException("读取确认输入失败", e);
+        }
     }
 
     private static double[] estimateSeconds(VideoInfo videoInfo) {
@@ -234,6 +278,8 @@ public class VideoCompressor {
         command.add(PRESET);
         command.add("-crf");
         command.add(String.valueOf(CRF));
+        command.add("-pix_fmt");
+        command.add("yuv420p");
         command.add("-c:a");
         command.add("aac");
         command.add("-b:a");
@@ -262,6 +308,8 @@ public class VideoCompressor {
         command.add(videoBitrateKbps + "k");
         command.add("-bufsize");
         command.add((videoBitrateKbps * 2) + "k");
+        command.add("-pix_fmt");
+        command.add("yuv420p");
         command.add("-c:a");
         command.add("aac");
         command.add("-b:a");
@@ -292,6 +340,8 @@ public class VideoCompressor {
         command.add(videoBitrateKbps + "k");
         command.add("-bufsize");
         command.add((videoBitrateKbps * 2) + "k");
+        command.add("-pix_fmt");
+        command.add("yuv420p");
         command.add("-c:a");
         command.add("aac");
         command.add("-b:a");
@@ -456,31 +506,34 @@ public class VideoCompressor {
         int dotIndex = name.lastIndexOf('.');
         String baseName = dotIndex > 0 ? name.substring(0, dotIndex) : name;
         String extension = dotIndex > 0 ? name.substring(dotIndex) : ".mp4";
-        File relativeParent = getRelativeParent(source);
-        return new File(relativeParent, baseName + ".compressed" + extension);
-    }
-
-    private static File getRelativeParent(File source) {
-        try {
-            File parent = source.getParentFile();
-            String rootPath = ROOT.getCanonicalPath();
-            String parentPath = parent.getCanonicalPath();
-            if (parentPath.equals(rootPath)) {
-                return OUTPUT_ROOT;
-            }
-            if (parentPath.startsWith(rootPath + File.separator)) {
-                String relativePath = parentPath.substring(rootPath.length() + 1);
-                return new File(OUTPUT_ROOT, relativePath);
-            }
-        } catch (IOException ignored) {
-        }
-        return OUTPUT_ROOT;
+        File outputDir = new File(source.getParentFile(), OUTPUT_DIR_NAME);
+        return new File(outputDir, baseName + ".compressed" + extension);
     }
 
     private static void ensureParentDir(File file) {
         File parent = file.getParentFile();
         if (!parent.exists() && !parent.mkdirs()) {
             throw new RuntimeException("创建输出目录失败: " + parent);
+        }
+    }
+
+    private static void openCompressedDirs(Set<File> outputDirs) {
+        if (outputDirs.isEmpty()) {
+            System.out.println("没有成功压缩的视频，不打开输出目录。");
+            return;
+        }
+        for (File outputDir : outputDirs) {
+            try {
+                System.out.println("打开压缩目录: " + outputDir.getAbsolutePath());
+                if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                    new ProcessBuilder("explorer.exe", outputDir.getAbsolutePath()).start();
+                } else {
+                    new ProcessBuilder("open", outputDir.getAbsolutePath()).start();
+                }
+            } catch (Exception e) {
+                System.out.println("打开压缩目录失败: " + outputDir.getAbsolutePath());
+                e.printStackTrace();
+            }
         }
     }
 
@@ -536,6 +589,63 @@ public class VideoCompressor {
         VideoTask(File file, VideoInfo videoInfo) {
             this.file = file;
             this.videoInfo = videoInfo;
+        }
+    }
+
+    static class CompressionResult {
+        boolean success;
+        long inputSize;
+        long outputSize;
+        File outputDir;
+
+        static CompressionResult success(long inputSize, long outputSize, File outputDir) {
+            var result = new CompressionResult();
+            result.success = true;
+            result.inputSize = inputSize;
+            result.outputSize = outputSize;
+            result.outputDir = outputDir;
+            return result;
+        }
+
+        static CompressionResult skipped() {
+            return new CompressionResult();
+        }
+    }
+
+    static class CompressionSummary {
+        int expectedCount;
+        int actualCount;
+        long inputSize;
+        long outputSize;
+        Set<File> outputDirs = new LinkedHashSet<File>();
+
+        CompressionSummary(int expectedCount) {
+            this.expectedCount = expectedCount;
+        }
+
+        void add(CompressionResult result) {
+            if (result == null || !result.success) {
+                return;
+            }
+            actualCount++;
+            inputSize += result.inputSize;
+            outputSize += result.outputSize;
+            if (result.outputDir != null) {
+                outputDirs.add(result.outputDir);
+            }
+        }
+
+        void print() {
+            System.out.println("视频压缩汇总");
+            System.out.println("应处理数量: " + expectedCount);
+            System.out.println("实处理数量: " + actualCount);
+            System.out.println("缩减前空间: " + ByteConvertUtils.bytesToMbStr(inputSize));
+            System.out.println("缩减后空间: " + ByteConvertUtils.bytesToMbStr(outputSize));
+            System.out.println("空间差: " + ByteConvertUtils.bytesToMbStr(inputSize - outputSize));
+        }
+
+        Set<File> getOutputDirs() {
+            return outputDirs;
         }
     }
 
